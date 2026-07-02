@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "myrealtrip": {
+      "type": "url",
+      "url": "https://mcp-servers.myrealtrip.com/mcp"
+    },
+    "google": {
+      "type": "url",
+      "url": "https://mcp-servers.googleapis.com",
+      "scopes": [
+        "https://www.googleapis.com/auth/drive.file",
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/calendar.events"
+      ],
+      "note": "Drive(My Maps KML·Sheets 일정표)와 Calendar 모두 이 하나의 커넥터로 처리한다. 스코프를 한 번에 묶어 OAuth 로그인은 최초 1회만 필요하며, 이후 토큰은 커넥터가 자동 갱신한다."
+    }
+  }
+}
