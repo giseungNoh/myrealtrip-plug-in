@@ -1,0 +1,56 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//myrealtrip-curator//KO
+X-WR-CALNAME:Rome\, Italy (Trastevere) 여행일정
+X-WR-TIMEZONE:Asia/Seoul
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:rome-trastevere-2026-3@myrealtrip-curator
+DTSTART:20260910T190000
+DTEND:20260910T210000
+SUMMARY:Enoteca La Vite (에노테카(와인바))
+LOCATION:Piazza San Cosimato\, Roma
+GEO:41.886892;12.469691
+DESCRIPTION:현지어 리뷰 비율: 76%\nGoogle Maps: https://www.google.com/maps/search/?api=1&query=41.8868918\,12.4696915\n메모: 칠판 메뉴 잔술\, 광장 야외석. 주소 추가 확인 필요
+END:VEVENT
+BEGIN:VEVENT
+UID:rome-trastevere-2026-free-day1@myrealtrip-curator
+DTSTART:20260910T163000
+DTEND:20260910T170000
+SUMMARY:🚶 자유 탐방 (여백)
+DESCRIPTION:이 시간은 비워두세요 — 근처를 걷다 우연히 발견한 곳에 들러보세요.
+END:VEVENT
+BEGIN:VEVENT
+UID:rome-trastevere-2026-1@myrealtrip-curator
+DTSTART:20260911T190000
+DTEND:20260911T210000
+SUMMARY:Enoteca L'Antidoto (에노테카(와인바))
+LOCATION:Vicolo del Bologna 19\, Roma
+GEO:41.891000;12.468856
+DESCRIPTION:현지어 리뷰 비율: 84%\nGoogle Maps: https://www.google.com/maps/search/?api=1&query=41.8909999\,12.4688555\n발굴 출처: https://www.puntarellarossa.it/2020/12/04/enoteca-lantidoto-roma-vini-naturali-e-un-apprendista-stregone-tra-i-vicoli-di-trastevere/\n메모: 자연 와인 200개 레이블\, 12석. 협찬 없음. 미디어 소스(Puntarella Rossa)
+END:VEVENT
+BEGIN:VEVENT
+UID:rome-trastevere-2026-free-day2@myrealtrip-curator
+DTSTART:20260911T163000
+DTEND:20260911T170000
+SUMMARY:🚶 자유 탐방 (여백)
+DESCRIPTION:이 시간은 비워두세요 — 근처를 걷다 우연히 발견한 곳에 들러보세요.
+END:VEVENT
+BEGIN:VEVENT
+UID:rome-trastevere-2026-4@myrealtrip-curator
+DTSTART:20260913T190000
+DTEND:20260913T210000
+SUMMARY:Latteria (와인바)
+LOCATION:Bar Latteria\, 7\, Via Benedetta\, Trastevere\, Municipio Roma I\, Roma\, Roma Capitale\, Lazio\, 00186\, Italia
+GEO:41.891505;12.469721
+DESCRIPTION:현지어 리뷰 비율: 50%\nGoogle Maps: https://www.google.com/maps/search/?api=1&query=41.8915051\,12.469721\n메모: 조용히 오래 앉을 수 있는 자연 와인바. 정확한 주소 미확인
+END:VEVENT
+BEGIN:VEVENT
+UID:rome-trastevere-2026-free-day4@myrealtrip-curator
+DTSTART:20260913T163000
+DTEND:20260913T170000
+SUMMARY:🚶 자유 탐방 (여백)
+DESCRIPTION:이 시간은 비워두세요 — 근처를 걷다 우연히 발견한 곳에 들러보세요.
+END:VEVENT
+END:VCALENDAR

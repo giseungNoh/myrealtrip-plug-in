@@ -45,41 +45,51 @@ description: 여행지·장소 유형·테마를 물어본 뒤, 기성 리뷰 �
 
 ## 2. 소스 선택 및 검색어 설계
 
-여행지 국가에 맞춰 현지에서 실제 많이 쓰는 검색 사이트·커뮤니티를 고른다. 검색어는 현지어를 우선한다.
-(대상국별 소스 목록은 아래 "국가별 소스 힌트" 참고.)
+### 우선 경로: spot_searcher.py (권장, 5~15초)
 
-**일반 키워드 검색은 배제 대상 소스가 상위를 점령한다.** 반드시 아래 두 전략을 우선한다:
+`src/tools/spot_searcher.py`가 있으면 Python 스크립트를 먼저 실행한다.
+스크립트가 모든 검색과 협찬 필터를 **병렬**로 처리하므로 LLM이 한 건씩 직접 검색하는 것보다 10~20배 빠르다.
 
-**모든 검색은 `site:` 도메인 한정으로 수행한다.** 일반 키워드 검색은 기성 플랫폼·아필리에이트 SEO 블로그가 상위를 독식하므로 사용하지 않는다.
+```bash
+# 설치 (최초 1회)
+pip install -r src/tools/requirements.txt
 
-**텍스트 소스 — 도메인 한정 검색 (현지인 구어체 키워드 우선)**
+# 실행
+python src/tools/spot_searcher.py \
+  --destination <여행지> \
+  --country <국가코드> \
+  --type <장소유형> \
+  --theme <테마>
+
+# 지원 국가 코드: japan, vietnam, thailand, taiwan, france, italy, usa,
+#                 uk, germany, spain, indonesia, hongkong
+```
+
+출력 JSON의 `candidates` 배열에서 `sponsored: false`인 항목만 후보로 사용한다.
+스크립트 실행 후 → **3단계로 바로 이동한다.**
+
+### 대체 경로: 직접 WebSearch (스크립트 실행 불가 시)
+
+스크립트를 실행할 수 없을 때만 아래 직접 검색을 쓴다. 반드시 `site:` 한정 검색만 사용한다.
 
 검증으로 효과가 확인된 키워드만 사용한다. ★ 표시가 검증 통과 키워드.
 
 ```
 site:ameblo.jp <여행지> <장소유형> 行ってみた      ★ 합격률 80%
 site:hatenablog.com <여행지> <장소유형> 行った      ★ 합격률 75%
-site:hatenablog.com <여행지> <장소유형> 感想
 site:note.com <여행지> <장소유형> ひとりで          ★ 합격률 100%
 site:note.com <여행지> <장소유형> 地元              ★ 합격률 100%
 ```
 
-사용하지 않는다 (검증으로 효과 없음 확인):
-- `レポ`, `リピ確定` — `行ってみた`와 결과 중복
-- `通ってる OR 近所` — OR 연산자 미작동, 유효 결과 0개
+사용하지 않는다:
+- `レポ`, `リピ確定` — `行ってみた`와 중복
+- `通ってる OR 近所` — OR 연산자 미작동
 
 **YouTube — WebSearch만 사용 (WebFetch 하지 않는다)**
 
-YouTube 페이지는 JavaScript 렌더링이라 WebFetch로 열면 푸터만 반환된다.
-WebSearch(`site:youtube.com`)로 구글 인덱싱 결과를 받아 제목·채널명이 현지어인지만 확인한다.
-뉴스 채널이 상위를 점유할 때는 해당 키워드를 버리고 다른 키워드로 교체한다.
-
 ```
-site:youtube.com <여행지> <장소유형> 穴場 vlog -ゆっくり解説 -ランキング   ★ 일본어 결과 확인
+site:youtube.com <여행지> <장소유형> 穴場 vlog -ゆっくり解説 -ランキング
 ```
-
-사용하지 않는다:
-- `銭湯 地元 行ってみた` — 화재·사건 뉴스가 상위를 독식, vlog 발굴 불가
 
 ## 3. 개인 여행기 탐색 + 후보 정리
 
@@ -90,8 +100,15 @@ site:youtube.com <여행지> <장소유형> 穴場 vlog -ゆっくり解説 -ラ
   - 주소를 끝내 찾지 못하면 "주소 미확인"으로 표기하고, 사용자에게 직접 확인을 권고한다.
   - 좌표(`lat`, `lng`)도 함께 기록한다. Google Maps 검색 결과 URL에서 추출하거나 WebFetch로 확인한다.
 - 왜 골랐는지 한 줄 근거 + **출처 링크** (어떤 개인 글에서 나왔는지)
-- **현지어 리뷰 비율(추정) 약 N%** — 지도/리뷰에서 현지어 리뷰 비중을 가늠해 표기.
-  비율이 높을수록 로컬한 곳. 산출 근거가 약하면 "추정"임을 명시한다.
+- **현지어 리뷰 비율 N%** — `review_ratio.py`로 실제 계산한다 (DDG 검색 + Unicode 언어 감지).
+  비율이 높을수록 로컬한 곳. 스크립트를 실행할 수 없을 때만 "추정"으로 표기한다.
+
+  ```bash
+  # 장바구니에 담은 후 실행 (장바구니에 local_review_ratio 자동 기입)
+  python3 src/tools/review_ratio.py --cart travel-cart/<trip-id>.json
+  # 특정 항목만: --item <id>
+  # 파일 수정 없이 미리보기: --no-write
+  ```
 
 ## 4. 제시
 
@@ -142,9 +159,9 @@ site:youtube.com <여행지> <장소유형> 穴場 vlog -ゆっくり解説 -ラ
 | 국가/지역 | 텍스트 소스(블로그·커뮤니티) | 현지 자국민 유튜브 탐색 키워드 예시 |
 |-----------|------------------------------|--------------------------------------|
 | 일본 | 아메바 블로그(ameblo), 하테나 블로그(hatena), note, 5ch 지역판 | `札幌 温泉 穴場 vlog -ゆっくり解説 -ランキング`, `地元民 温泉 札幌 行ってみた` |
-| 베트남 | Facebook 지역 그룹, 개인 블로그, Foody의 개인 리뷰 본문 | `quán ăn ngon Đà Nẵng ít người biết`, `review thật lòng` |
-| 태국 | Pantip 포럼(여행·리뷰 게시판), 개인 블로그 | `ร้านอาหารซ่อนเร้น กรุงเทพ`, `รีวิวจริง คนท้องถิ่น` |
-| 대만 | PTT(여행판·Gossiping), 痞客邦(pixnet) 개인 블로그 | `台北隱藏版美食 在地人推薦`, `私房景點 vlog` |
+| 베트남 | **Foody.vn `/bai-viet/` 경로 개인 후기** (집계 점수 페이지 `/da-nang/quan-an` 배제), `site:blogspot.com`, `site:wordpress.com` 개인 블로그. Facebook 지역 그룹(WebFetch 불가 — Google 캐시 경유). 배제: klook, ivivu, bazantravel, vinpearl, tourism.danang.vn | `Đà Nẵng quán bình dân ít biết vlog`, `ăn ngon giá rẻ Đà Nẵng vlog` (※ `ít người biết` / `review thật lòng` 키워드는 관광 상업 콘텐츠 다수 — 비권장) |
+| 태국 | **Pantip 포럼** (site:pantip.com ★합격률100%) 우선. 개인 블로그는 `site:medium.com`, `site:bloggang.com` 경유. 배제: -hungryhub -wongnai -soimilk -thestandard.co -krungsriconsumer | YouTube 지역 필터 필수: `"กรุงเทพ" OR "กทม"` 명시 (`ร้านอาหารซ่อนเร้น กรุงเทพ กทม vlog`, `-สปอนเซอร์`). 타 지역(촌부리·나콘사완) 유입 차단 |
+| 대만 | **痞客邦(pixnet) 개인 블로그** ★(`site:pixnet.net ... 在地人` 합격률~70%), **PTT Food·WomenTalk·Gossiping** ★. 배제: walkerland.com.tw, travel.yam.com, klook.com, cw.com.tw. 주의: pixnet 블로거 중 `邀稿歡迎洽詢` 명시 계정은 포스트별 재확인 | `-業配` 필터 필수. `台北隱藏版美食 在地人推薦 vlog -業配`, `私房景點 vlog` (※ `阿星探店` 채널 = 중국 본토 기반 — 배제) |
 | 필리핀 | Reddit r/Philippines, Facebook 지역 그룹(도시별), 개인 블로그 | `hidden gems Manila locals only`, `underrated cebu food vlog` |
 | 홍콩 | LIHKG(連登討論區), 香港討論區(hkdiscuss), 개인 블로그 | `香港隱世食店 本地人`, `街坊推介 vlog` |
 | 싱가포르 | HardwareZone 포럼 여행·음식판, Reddit r/singapore, 개인 블로그 | `hidden hawker stalls Singapore locals eat`, `neighbourhood food vlog` |
@@ -155,7 +172,7 @@ site:youtube.com <여행지> <장소유형> 穴場 vlog -ゆっくり解説 -ラ
 
 | 국가/지역 | 텍스트 소스 | 현지 자국민 유튜브 탐색 키워드 예시 |
 |-----------|-------------|--------------------------------------|
-| 미국 | Reddit 도시 서브레딧(r/nyc, r/LosAngeles, r/chicago, r/seattle 등), 개인 음식 블로그 | `hidden gem NYC locals only`, `underrated LA food spots vlog` |
+| 미국 | **개인 음식 블로그** (`site:substack.com`, `site:wordpress.com`, `site:blogspot.com` 경유). eatthisny.com류 로컬 탐방 블로그. Reddit은 `site:reddit.com` 직접 검색 불가(HTTP 403 차단) — `NYC hidden gem restaurant reddit 2024` 일반 검색으로 우회. 배제: resy.com, joinmytrip.com, nimbuskitchen.com, tastingtable.com, eater.com, timeout.com | `NYC hidden gem restaurant locals vlog -sponsored`, `"where locals eat" NYC neighborhood vlog` (채널명 영어 + 개인 채널 확인 필수, 구독자 수가 많아도 협찬 여부 별도 확인) |
 | 캐나다 | Reddit 도시 서브레딧(r/vancouver, r/toronto, r/montreal 등), 개인 블로그 | `hidden restaurants Vancouver locals`, `undiscovered spots Toronto vlog` |
 
 **유럽**
@@ -163,7 +180,7 @@ site:youtube.com <여행지> <장소유형> 穴場 vlog -ゆっくり解説 -ラ
 | 국가/지역 | 텍스트 소스 | 현지 자국민 유튜브 탐색 키워드 예시 |
 |-----------|-------------|--------------------------------------|
 | 영국·아일랜드 | Reddit 도시 서브레딧(r/london, r/edinburgh, r/ireland), 개인 블로그 | `hidden London locals only`, `underrated Edinburgh spots vlog` |
-| 프랑스 | Le Routard 포럼(개인 게시글만, 편집 기사 제외), Over-Blog 개인 블로그 | `endroits cachés Paris habitants`, `resto méconnu vlog français` |
+| 프랑스 | **Over-Blog 개인 블로그** (`site:over-blog.com ... "j'ai testé" OR "j'y suis allée" OR "coup de coeur" 2024 OR 2025`). Le Routard 포럼은 HTTP 403 차단 중 — Wayback Machine(`web.archive.org`) 또는 Google 캐시 경유 시도. 배제: tripadvisor, thefork.com, paris.fr, PVAM(Paris Vous Aime Magazine) | `"restaurant caché Paris" vlog français -sponsorisé -partenariat`, `"mon adresse secrète" OR "resto de quartier" Paris vlog` (※ Routard 포럼 직접 접근 불가 확인됨. WebSearch 제목으로 개인 게시글 판별) |
 | 이탈리아 | Viaggiare.net 포럼 개인 글, Reddit r/italy, 개인 블로그 | `posti nascosti Roma residenti`, `trattoria sconosciuta vlog italiano` |
 | 스페인·포르투갈 | Mochileros.org 포럼, Reddit r/spain·r/portugal, 개인 블로그 | `lugares escondidos Madrid locales`, `restaurante desconocido vlog` |
 | 독일·오스트리아·스위스 | Reiseforum.de 개인 여행기, Reddit r/germany, 개인 블로그 | `versteckte Orte Berlin Einheimische`, `geheimtipp Restaurant vlog` |

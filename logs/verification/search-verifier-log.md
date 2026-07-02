@@ -198,3 +198,222 @@
 | **ameblo `温泉 行ってみた`** | ★ 유지 — 80% 합격, 구어체 효과 확인 |
 
 <!-- 다음 검증 결과는 아래에 같은 형식으로 추가 -->
+
+---
+
+## #004 — 대만 타이페이 / 맛집 / 로컬 (병렬 에이전트 검증)
+
+- **일시:** 2026-07-02
+- **판정:** PASS (조건부 개선 권장)
+
+### 검색어별 합격률
+
+| 검색어 | 합격률 | 비고 |
+|--------|--------|------|
+| `site:pixnet.net 台北 隱藏版 美食 在地人` | ~70% | 개인 블로거 fancy6517 완전 합격 |
+| `site:ptt.cc 台北 美食 推薦 在地` | 확인분 100% | 커뮤니티 일반 유저 작성 |
+| `台北 隱藏版美食 "在地人" OR "私房" 部落格 2024` | ~30% | 집계/여행사 오염율 높음 |
+| `site:youtube.com 台北隱藏版美食 -業配` | ~56% | 중국어 채널 5개 확보 |
+
+### 합격 소스 및 추출 장소
+
+- **fancy6517.pixnet.net** (協찬 없음): 阿財虱目魚肚, 稻香石磨腸粉, 國都甜不辣, 廣興無名臭豆腐, 龍抄手涼麵
+- **PTT Food/WomenTalk**: 파인다이닝~로컬 단골 관점 다수
+- **YouTube**: 觀光客幾乎沒有 (小巨蛋), 後車站華陰街必吃7家, 大稻埕隱藏美食 등 5개 채널 합격
+
+### 배제 소스
+
+| 소스 | 배제 이유 |
+|------|---------|
+| klook.com/zh-TW/blog | OTA 자사 홍보 |
+| walkerland.com.tw | 집계 플랫폼 |
+| cw.com.tw | 주류 미디어 |
+| nixojov.pixnet.net | 블로그 프로필에 "邀稿歡迎洽詢" 명시 → 포스트별 협찬 여부 재확인 필요 |
+| 阿星探店 YouTube 채널 | 중국 본토 기반 추정, 대만 로컬 아님 |
+
+### 개선 제안
+
+- 검색어 3은 `site:` 한정 필터 없이 일반 검색 → 집계 오염율 70%. `site:pixnet.net` 또는 `site:ptt.cc` 로 교체
+- PTT는 `WomenTalk` 외 `Gossiping` / `Taiwan` 판도 추가
+- `-業配` 필터 후에도 YouTube 설명란 협찬 재확인 권장
+
+---
+
+## #005 — 태국 방콕 / 맛집 / 로컬 (병렬 에이전트 검증)
+
+- **일시:** 2026-07-02
+- **판정:** NEEDS WORK (Pantip 우수, 개인 블로그 전무)
+
+### 검색어별 합격률
+
+| 검색어 | 합격률 | 비고 |
+|--------|--------|------|
+| `site:pantip.com กรุงเทพ ร้านอาหาร รีวิว ซ่อนเร้น` | **100%** | 협찬 표기 전무, 커뮤니티 일반 유저 |
+| `กรุงเทพ "คนท้องถิ่น" OR "ไม่ค่อยมีคนรู้จัก" บล็อกส่วนตัว 2024` | **10%** | 개인 블로그 0건, 미디어·기업만 반환 |
+| `site:youtube.com ร้านอาหารซ่อนเร้น กรุงเทพ รีวิวจริง -สปอนเซอร์` | **70%** | 태국어 채널 5개 확보 |
+
+### 합격 소스 및 추출 장소
+
+- **Pantip topic/36937705** (saturdaysisters): 20개 방콕 로컬 식당 목록
+- **Pantip topic/41193973** (ธาราสินธุ์): ครัวบางนา, ฟาร์มมู, บ้านไอซ์ 등
+- **YouTube**: เกี้ยแซ่บบ, ตะลอน ON ตลาด, อร่อย 100 เดียว 등 태국어 로컬 채널 5개
+
+### 배제 소스
+
+| 소스 | 배제 이유 |
+|------|---------|
+| thestandard.co | "Robinhood x THE STANDARD LIFE" 협찬 명시 |
+| ryoiireview.com | "SPONSORED" 표기 |
+| krungsriconsumer.com | 은행 브랜드 콘텐츠 + 신용카드 연동 |
+| hungryhub.com | 집계 플랫폼 |
+
+### 개선 제안
+
+1. 개인 블로그 검색어 → `site:medium.com OR site:bloggang.com กรุงเทพ ร้านอาหาร ซ่อนเร้น` 로 교체
+2. 집계 명시 배제 `-hungryhub -wongnai -soimilk -tripadvisor` 추가
+3. YouTube 지역 필터: `"กรุงเทพ" OR "กทม"` 명시로 타 지역 유입 차단
+
+---
+
+## #006 — 베트남 다낭 / 맛집 / 로컬 (병렬 에이전트 검증)
+
+- **일시:** 2026-07-02
+- **판정:** NEEDS WORK (Foody 개인 리뷰 합격, 개인 블로그 전무)
+
+### 검색어별 합격률
+
+| 검색어 | 합격률 | 비고 |
+|--------|--------|------|
+| `site:facebook.com "Đà Nẵng" "quán ăn" nhóm địa phương` | 판별불가 | Facebook 로그인 없이 WebFetch 접근 불가 |
+| `Đà Nẵng quán ăn ngon ít người biết blog cá nhân 2024` | **0%** | 개인 블로그 0건, 전부 상업 플랫폼 |
+| `site:foody.vn Đà Nẵng review chi tiết` | **100%** | `/bai-viet/` 경로 개인 리뷰 협찬 없음 |
+| `site:youtube.com Đà Nẵng quán ăn ngon ít biết review thật` | 베트남어 10/10 | "ít người biết" 제목 영상 0건 |
+
+### 합격 소스 및 추출 장소
+
+- **Foody.vn/bai-viet/** (T Y, Tim Le 등): 다낭 3일 800k 루트, 17곳 로컬 식당, 길거리 음식 多
+- **foody.vn/da-nang/an-vat-via-he**: Bánh Tráng Kẹp Dì Hoa, Ăn Vặt Cô Liên 등
+
+### 배제 소스
+
+klook.com, ivivu.com, bazantravel.com, vinpearl.com, tourism.danang.vn 등 전부 상업 플랫폼
+
+### 개선 제안
+
+1. 개인 블로그: `site:blogspot.com Đà Nẵng quán ăn ngon` 또는 `site:wordpress.com Đà Nẵng ẩm thực` 로 교체
+2. Foody.vn은 집계 점수 페이지(`/da-nang/quan-an`)는 배제, `/bai-viet/` 경로 개인 후기만 채택
+3. Facebook 그룹: WebFetch 불가, Google 캐시 경유 또는 수동 확인 필요
+
+---
+
+## #007 — 프랑스 파리 / 카페·식당 / 로컬 (병렬 에이전트 검증)
+
+- **일시:** 2026-07-02
+- **판정:** NEEDS WORK (Over-Blog 부분 합격, Routard 포럼 접근 불가)
+
+### 검색어별 합격률
+
+| 검색어 | 합격률 | 비고 |
+|--------|--------|------|
+| `site:routard.com/forum Paris café restaurant "endroit caché"` | **판별불가** | HTTP 403 전 URL 차단 |
+| `site:over-blog.com Paris restaurant "découvert" OR "coup de coeur" local 2024` | 50~67% | 2014~2018 구작 많음 |
+| `Paris café "les locaux" blog personnel 2024 -tripadvisor` | 20~40% | 비개인 미디어 다수 |
+| `site:youtube.com Paris restaurant caché habitants vlog -sponsorisé` | 40~50% | YouTube 설명란 협찬 미확인 |
+
+### 합격 소스 및 추출 장소
+
+- **emilieaparis.over-blog.com** (개인 블로거 Lily): Restaurant Nouilles Fraîches (15구), Restaurant Ensuite (1구)
+- **monpetit20e.com** (독립 동네 저널): Candle kids coffee, Restaurant La Colline, Jolie Môme 등 8곳 (20구)
+- **YouTube 조건부**: "La bonne adresse parisienne", "NOS RESTAURANTS PRÉFÉRÉS" 등 3건 (설명란 미확인)
+
+### 배제 소스
+
+| 소스 | 배제 이유 |
+|------|---------|
+| PVAM YouTube | Paris Vous Aime Magazine, 편집 매거진 채널 |
+| relations-publiques.pro | 홍보 에이전시 사이트 |
+| paris.fr | 파리시 공식 |
+
+### 개선 제안
+
+1. **Routard 우회**: Google Cache (`cache:routard.com/forum_message/...`) 또는 Wayback Machine 경유
+2. **Over-Blog 신규 글**: `"j'ai testé" OR "j'y suis allée" OR "notre adresse"` + `2024 OR 2025` 날짜 조건
+3. **YouTube 협찬 확인**: 설명란 `#ad`, `#sponsorisé`, `#partenariat` 해시태그 수동 확인 필요
+
+---
+
+## #008 — 미국 뉴욕 / 맛집 / 로컬 (재검증)
+
+- **일시:** 2026-07-02
+- **판정:** NEEDS WORK (Reddit 크롤러 차단, 개인 블로그 18%)
+
+### 검색어별 합격률
+
+| 검색어 | 합격률 | 비고 |
+|--------|--------|------|
+| `site:reddit.com/r/nyc "hidden gem" restaurant 2024` | **0% (N/A)** | reddit.com HTTP 403 — 크롤러 완전 차단 |
+| `site:reddit.com/r/FoodNYC underrated restaurant 2024` | **0% (N/A)** | 동일 |
+| `NYC "neighborhood spot" OR "hidden gem" restaurant personal blog 2024 -yelp -tripadvisor -eater` | **18%** | 11건 중 2건 합격 |
+| `site:youtube.com NYC hidden gem restaurant locals vlog -sponsored` | 44% 채널 확인 | 9건 중 4건 채널명 확인 |
+
+### 합격 소스 및 추출 장소
+
+- **thewinechef.com** (Lisa Denning 개인 블로그, 협찬 없음): Jungsik, Frevo, Thai Diner, Laser Wolf(Brooklyn), Pinch Chinese, Cosme 등 22곳 (파인다이닝 편향)
+- **eatthisny.com** (익명 NYC 탐방 블로그, 협찬 없음): TBD Gimbap, Quique Crudo, Traze Pizza, Los Burritos Juárez, House of Joy, Chubby Skewers, Diljān Bakery, Falafel Plant
+
+### 배제 소스
+
+| 소스 | 배제 이유 |
+|------|---------|
+| resy.com/blog | 레스토랑 예약 집계 플랫폼 블로그 |
+| joinmytrip.com | 그룹 여행 플랫폼 콘텐츠 |
+| nimbuskitchen.com | 주방 렌탈 기업 블로그 |
+| tastingtable.com | 미디어 집계 사이트 |
+| browneyedflowerchild.com | Affiliate 링크 공시 (경계선) |
+
+### YouTube
+
+- Adam Glyn (개인 채널): "5 Manhattan Hidden Gems: A Local's NYC Food Guide" — 합격
+- Kaitlyn Rosati (개인 채널): "New York City's hidden restaurant gems" — 합격
+- @HereBeBarr / Jon Barr: 10년 NYC 거주, 구독자 40만+ → 후속 협찬 확인 필요
+
+### 핵심 이슈 및 개선
+
+| 이슈 | 해결 방법 |
+|------|---------|
+| reddit.com 크롤러 완전 차단 | `NYC hidden gem restaurant reddit 2024` 우회 검색으로 대체 |
+| 개인 블로그 18% 정확도 | `site:substack.com`, `site:wordpress.com`, `site:blogspot.com` 도메인 한정 추가 |
+| YouTube 채널명 44% 미확인 | 영상 제목에 채널명 포함된 검색 스니펫 우선 활용 |
+
+---
+
+## #009 — spot_searcher.py 성능 테스트 (삿포로 / 온천)
+
+- **일시:** 2026-07-02
+- **방식:** Python 병렬 검색 스크립트 (`src/tools/spot_searcher.py`)
+
+### 성능 비교
+
+| 방식 | 소요 시간 | 결과 수 | 비고 |
+|------|----------|--------|------|
+| LLM 순차 WebSearch | 2~5분 | ~20건 | 각 쿼리 순차 실행 |
+| spot_searcher.py | **~5~12초** | 17~29건 | asyncio 병렬 |
+
+**속도 향상: 약 10~30배**
+
+### 합격 소스 샘플 (17건)
+
+- `sapporo-sento-syosinsya.hatenablog.com` — 삿포로 銭湯 전문 순례 블로그
+- `note.com/kourichill` — 湯屋・サーモン (地元 사우나)
+- `note.com/ono3log` — 北海道民 7년 거주자 추천 日帰り温泉
+- `ameblo.jp/catmimi53` — 근처 온천 방문기
+- `yukko-de-memo.hatenablog.com` — 정산계 온천 개인 여행기
+
+### 주요 이슈 및 해결
+
+| 이슈 | 해결 방법 |
+|------|---------|
+| DDG 병렬 TLS 충돌 | `asyncio.Semaphore(3)` + `asyncio.to_thread` |
+| site: 필터 미준수 결과 혼입 | `url_matches_site()` 도메인 검증 추가 |
+| bing.com/aclick 광고 URL 유입 | `_ALWAYS_EXCLUDED` 리스트에 추가 |
+| 일본어 "PR" 과잉 차단 | 명시적 협찬 형태(`【PR】`, `#PR`, `PR記事` 등)로 패턴 축소 |

@@ -2,11 +2,27 @@
   "name": "myrealtrip-curator",
   "version": "0.1.0",
   "description": "현지 블로그·커뮤니티에서 검증된 장소를 찾아 장바구니에 담고, 일정표나 구글 캘린더로 만들며, 마이리얼트립 상품을 추천해 연결하는 여행 큐레이션 플러그인",
+  "author": {
+    "name": "MyRealTrip Curator"
+  },
   "skills": "./skills/",
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "마이리얼트립 여행 큐레이터",
     "shortDescription": "테마 코스 큐레이션 → 일정 조립 → 상품 연결",
-    "category": "Travel"
+    "longDescription": "개인 여행기와 현지 커뮤니티에서 관광객 쏠림이 적은 장소를 발굴하고, 선택한 장소를 여행 장바구니에 담아 일정표와 구글 캘린더로 정리한 뒤 필요한 경우 마이리얼트립 상품을 추천합니다.",
+    "developerName": "MyRealTrip Curator",
+    "category": "Travel",
+    "capabilities": [
+      "Travel planning",
+      "Local discovery",
+      "Calendar sync"
+    ],
+    "defaultPrompt": [
+      "삿포로 온천 숨은 스팟 찾아줘",
+      "장바구니로 3일 일정 짜줘",
+      "예약할 마이리얼트립 상품 찾아줘"
+    ],
+    "brandColor": "#1F8A70"
   }
 }

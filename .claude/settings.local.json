@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "WebSearch"
+      "WebSearch",
+      "Bash(pip install *)",
+      "Bash(python3 -m pip install aiohttp duckduckgo-search -q)",
+      "Bash(python3 *)",
+      "Bash(python3 src/tools/spot_searcher.py --destination 札幌 --country japan --type 温泉)",
+      "Read(//tmp/**)",
+      "Bash(xargs -I{} sh -c 'echo \"=== {} ===\" && wc -l {}')"
     ]
   }
 }
