@@ -1,0 +1,16 @@
+{
+  "name": "myrealtrip-curator",
+  "interface": {
+    "displayName": "MyRealTrip Curator Marketplace"
+  },
+  "plugins": [
+    {
+      "name": "myrealtrip-curator",
+      "source": {
+        "source": "local",
+        "path": "./src"
+      },
+      "category": "Travel"
+    }
+  ]
+}

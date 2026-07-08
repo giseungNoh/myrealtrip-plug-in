@@ -13,6 +13,8 @@ import json
 import re
 import argparse
 import sys
+import multiprocessing
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass, asdict
 from typing import Optional
 
@@ -35,40 +37,67 @@ SPONSORED_PATTERNS: dict[str, re.Pattern] = {
         r"|協賛いただき|協賛を受け",
     ),
     "vi": re.compile(
-        r"tài trợ|quảng cáo|hợp tác thương mại|được tài trợ|collab",
+        # 베트남어 협찬 표기 — 명시적 형태만 잡는다 ("quảng cáo", "tài trợ" 단독 단어는 제외:
+        # 학자금 후원·일반 광고 배너 등 무관한 맥락에서도 흔히 등장해 오탐이 많다)
+        r"được tài trợ bởi|bài (viết|đăng) (có |được )?tài trợ|nội dung (được )?tài trợ"
+        r"|#quảng ?cáo\b|#ad\b|#sponsored\b|hợp tác (thương mại )?trả phí",
         re.IGNORECASE,
     ),
     "th": re.compile(
-        r"สปอนเซอร์|ได้รับการสนับสนุน|โฆษณา|ร่วมกับ|#ad",
+        # 태국어 협찬 표기 — 명시적 문장/해시태그만 잡는다 ("โฆษณา", "ร่วมกับ" 단독은 제외:
+        # 너무 일반적인 단어라 무관한 페이지에서도 흔히 매치된다)
+        r"บทความนี้ได้รับการสนับสนุน|ได้รับการสนับสนุนจาก|รีวิวนี้ได้รับสปอนเซอร์"
+        r"|ได้รับสินค้ามารีวิว|#โฆษณา|#สปอนเซอร์",
         re.IGNORECASE,
     ),
     "zh": re.compile(
-        r"贊助|廣告|合作|業配|置入|邀稿|試吃邀約|試用|受邀",
+        # 중국어(번체) 협찬 표기 — 명시적 형태만 잡는다 ("廣告", "合作", "受邀", "試用" 단독은 제외:
+        # 너무 일반적인 단어라 무관한 글에서도 흔히 매치된다)
+        r"業配文?|置入性行銷|邀稿邀約|試吃邀約|收到(廠商|品牌)邀約"
+        r"|本文由.{0,10}贊助|贊助商提供|#業配|#廣告合作",
         re.IGNORECASE,
     ),
     "fr": re.compile(
-        r"sponsorisé|partenariat|offert par|en collaboration avec|publicité|#ad",
+        # 프랑스어 협찬 표기 — 명시적 형태만 잡는다 ("partenariat", "publicité" 단독은 제외:
+        # 무보수 협업·일반 광고 언급과 구분이 안 돼 오탐이 많다)
+        r"article sponsorisé|billet sponsorisé|en partenariat rémunéré avec"
+        r"|collaboration rémunérée|publi-?reportage|#sponsorisé\b|#partenariat\b",
         re.IGNORECASE,
     ),
     "it": re.compile(
-        r"sponsorizzato|in collaborazione con|offerto da|pubblicità|#ad",
+        # 이탈리아어 협찬 표기 — 명시적 형태만 잡는다 ("in collaborazione con", "pubblicità" 단독은 제외:
+        # 무보수 협업·일반 광고 언급과 구분이 안 돼 오탐이 많다)
+        r"articolo sponsorizzato|post sponsorizzato|collaborazione (retribuita|a pagamento)"
+        r"|pubbliredazionale|#sponsorizzato\b",
         re.IGNORECASE,
     ),
     "en": re.compile(
-        r"\bsponsored\b|\bgifted\b|\b#ad\b|\bpaid partnership\b"
-        r"|\bin collaboration with\b|\bpaid post\b",
+        # 영어 협찬 표기 — 명시적 형태만 잡는다 ("gifted", "in collaboration with" 단독은 제외:
+        # 일상적 의미로도 쓰여 오탐이 많다)
+        r"\bsponsored post\b|\bpaid partnership\b|\bin paid collaboration with\b"
+        r"|\b#ad\b|\b#sponsored\b|\bthis (post|article) (is|was) sponsored\b"
+        r"|\bpr (gift|sample) received\b",
         re.IGNORECASE,
     ),
     "de": re.compile(
-        r"gesponsert|werbung\b|kooperation|anzeige|#werbung",
+        # 독일어 협찬 표기 — 명시적 형태만 잡는다 ("werbung", "anzeige", "kooperation" 단독은 제외:
+        # 메뉴명·일반 광고 배너 등에도 흔히 등장해 오탐이 많다)
+        r"gesponserter (beitrag|artikel|post)|bezahlte (kooperation|partnerschaft)"
+        r"|unbezahlte werbung|#werbung\b|#anzeige\b",
         re.IGNORECASE,
     ),
     "es": re.compile(
-        r"patrocinado|publicidad|en colaboración con|regalo de|#ad",
+        # 스페인어 협찬 표기 — 명시적 형태만 잡는다 ("publicidad", "en colaboración con" 단독은 제외:
+        # 무보수 협업·일반 광고 언급과 구분이 안 돼 오탐이 많다)
+        r"artículo patrocinado|publirreportaje|colaboración (pagada|remunerada)"
+        r"|#patrocinado\b|#publicidad\b",
         re.IGNORECASE,
     ),
     "ko": re.compile(
-        r"협찬|광고|제공|스폰서|PR\b|대가|무상|지원받",
+        # 한국어 협찬 표기 — 명시적 형태만 잡는다 ("광고", "제공", "대가", "무상", "지원받" 단독은 제외:
+        # "정보 제공", "무상 임대" 등 무관한 맥락에서도 흔히 등장해 오탐이 많다)
+        r"\[협찬\]|\(협찬\)|#협찬|#광고|협찬(을|받아서|받았습니다|받은)\b"
+        r"|제공받아\s?작성|유료광고\s?포함|이 (글|포스팅)은 (업체|브랜드)(로부터|에서)?\s?(협찬|지원)을?\s?받아",
         re.IGNORECASE,
     ),
 }
@@ -188,6 +217,23 @@ COUNTRY_CONFIG: dict[str, dict] = {
         ],
         "exclude_domains": ["tripadvisor", "yelp.de"],
     },
+    "switzerland": {
+        "lang": "de",
+        "queries": lambda d, t: [
+            # 독일어권(루체른·취리히 등) 개인 블로그·포럼 우선
+            f'{d} {t} Geheimtipp Einheimische persönlicher Blog',
+            f"site:blogspot.com {d} {t} Geheimtipp",
+            f"site:reddit.com/r/switzerland {d} {t} Geheimtipp locals",
+            # 프랑스어권(제네바·로잔 등) 대비 — 관광 공식 사이트 배제 강화
+            f'{d} {t} "adresse secrète" OR "coup de coeur" blog personnel -tripadvisor',
+        ],
+        "exclude_domains": [
+            "tripadvisor", "myswitzerland.com", "luzern.com", "myluzern.com",
+            "switzerland.com", "getyourguide.com", "viator.com", "booking.com",
+            "wikipedia.org", "switzerlanding.com", "planetware.com", "lonelyplanet.com",
+            "thefork.com", "tour-switzerland.ch",
+        ],
+    },
     "spain": {
         "lang": "es",
         "queries": lambda d, t: [
@@ -230,17 +276,29 @@ class SpotCandidate:
 # ---------------------------------------------------------------------------
 # 비동기 fetch + 협찬 검사
 # ---------------------------------------------------------------------------
-FETCH_TIMEOUT = aiohttp.ClientTimeout(total=8, connect=3)
+FETCH_TIMEOUT = aiohttp.ClientTimeout(total=10, connect=4)
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+FETCH_MAX_BYTES = 25000
+
+# JS 렌더링 필요하거나 접근 제한된 도메인 — fetch 자체를 스킵
+_SKIP_FETCH_DOMAINS = [
+    "maps.google.com", "google.com/maps", "google.com/search",
+    "maps.app.goo.gl", "goo.gl",          # 구글맵 단축 링크 (접근 제한)
+    "youtube.com", "youtu.be",
+    "instagram.com", "facebook.com", "twitter.com", "x.com", "t.co",
+    "tiktok.com",
+]
 
 
 async def fetch_page(session: aiohttp.ClientSession, url: str) -> str:
-    """페이지 앞 6000자만 가져온다 (협찬 표기는 보통 상단에 있음)."""
+    """페이지 앞 25000바이트 가져온다 (협찬 표기 + 본문 일부 포함 범위)."""
+    if any(skip in url for skip in _SKIP_FETCH_DOMAINS):
+        return ""
     try:
         async with session.get(url, timeout=FETCH_TIMEOUT, allow_redirects=True) as resp:
             if resp.status == 200:
                 raw = await resp.read()
-                text = raw[:12000].decode("utf-8", errors="ignore")
+                text = raw[:FETCH_MAX_BYTES].decode("utf-8", errors="ignore")
                 return text
     except Exception:
         pass
@@ -284,9 +342,33 @@ def url_matches_site(url: str, site_domain: Optional[str]) -> bool:
 
 
 def _ddgs_search_sync(query: str, max_results: int) -> list[dict]:
-    """스레드 풀에서 실행되는 동기 DDG 검색."""
-    ddgs = DDGS()
-    return list(ddgs.text(query, max_results=max_results))
+    """
+    별도 프로세스(ProcessPoolExecutor)에서 실행되는 동기 DDG 검색.
+
+    스레드 풀(asyncio.to_thread)에서 실행하면 안 된다: DDGS가 쓰는 HTTP
+    백엔드(primp/reqwest)가 시스템 프록시 설정을 조회할 때 macOS의
+    SystemConfiguration 프레임워크를 호출하는데, 이 프레임워크는 메인
+    스레드가 아닌 곳에서 호출되면 인터프리터 전체가 죽는 네이티브
+    크래시(세그폴트/abort)를 일으킨다 — Python 자체의 _scproxy 모듈도
+    동일한 제약이 있는 것으로 알려진 macOS 고유 문제다. try/except로
+    잡을 수 없는 크래시이므로, 각 프로세스가 자신의 메인 스레드를 갖도록
+    프로세스 단위로 격리해서 실행한다.
+
+    macOS 첫 실행 시 네트워크 권한 다이얼로그로 TLS 오류가 날 수 있어
+    최대 2회 재시도한다.
+    """
+    import time
+    last_exc: Exception = RuntimeError("DDG search not attempted")
+    for attempt in range(3):
+        try:
+            ddgs = DDGS()
+            return list(ddgs.text(query, max_results=max_results))
+        except Exception as e:
+            last_exc = e
+            if attempt < 2:
+                time.sleep(1.5)  # macOS 네트워크 허용 대기 후 재시도
+    print(f"[WARN] DDG 검색 3회 실패: {last_exc}", file=sys.stderr)
+    return []
 
 
 # ---------------------------------------------------------------------------
@@ -297,18 +379,16 @@ async def search_and_verify(
     lang: str,
     exclude_domains: list[str],
     session: aiohttp.ClientSession,
+    executor: ProcessPoolExecutor,
     max_results: int = 6,
-    sem: Optional[asyncio.Semaphore] = None,
 ) -> list[SpotCandidate]:
+    loop = asyncio.get_running_loop()
+
     async def _do_search():
-        return await asyncio.to_thread(_ddgs_search_sync, query, max_results)
+        return await loop.run_in_executor(executor, _ddgs_search_sync, query, max_results)
 
     try:
-        if sem:
-            async with sem:
-                raw_results = await _do_search()
-        else:
-            raw_results = await _do_search()
+        raw_results = await _do_search()
     except Exception as e:
         print(f"[WARN] Search failed for '{query}': {e}", file=sys.stderr)
         return []
@@ -404,15 +484,19 @@ async def discover(
 
     print(f"[INFO] {destination}/{place_type} — {len(queries)}개 쿼리 병렬 실행 중...", file=sys.stderr)
 
-    # Semaphore를 이벤트 루프 안에서 생성 (Python 3.9 호환)
-    sem = asyncio.Semaphore(3)
-
-    async with aiohttp.ClientSession(headers={"User-Agent": USER_AGENT}) as session:
-        tasks = [
-            search_and_verify(q, lang, exclude_domains, session, max_results_per_query, sem)
-            for q in queries
-        ]
-        all_groups = await asyncio.gather(*tasks)
+    # DDG 검색은 프로세스 풀에서 실행한다 (스레드 풀 사용 시 macOS에서
+    # 네이티브 크래시 발생 — _ddgs_search_sync 문서 참고).
+    # spawn 컨텍스트를 명시해 macOS의 fork() 안전성 문제(Objective-C
+    # 런타임이 fork 이후 다른 스레드에서 초기화 중이던 경우 크래시)도
+    # 함께 피한다. Windows는 원래 spawn만 지원하므로 동일하게 안전하다.
+    mp_context = multiprocessing.get_context("spawn")
+    with ProcessPoolExecutor(max_workers=3, mp_context=mp_context) as executor:
+        async with aiohttp.ClientSession(headers={"User-Agent": USER_AGENT}) as session:
+            tasks = [
+                search_and_verify(q, lang, exclude_domains, session, executor, max_results_per_query)
+                for q in queries
+            ]
+            all_groups = await asyncio.gather(*tasks)
 
     all_candidates = [c for group in all_groups for c in group]
     clean = [asdict(c) for c in all_candidates if not c.sponsored]

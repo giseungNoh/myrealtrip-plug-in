@@ -1,6 +1,6 @@
 ---
 name: manage-travel-cart
-description: 사용자가 고른 여행 장소를 장바구니 파일(JSON)에 담고, 목록을 보여주고, 빼는 작업을 한다. 장바구니가 차면 1단계로 Google Maps 링크를 생성하고, 2단계로 Google My Maps 커스텀 지도를 만들어 공유 링크를 제공한다. "이거 담아줘", "장바구니 보여줘", "3번 빼줘", "지도로 보여줘", "My Maps 만들어줘" 같은 요청에 사용한다.
+description: 사용자가 고른 여행 장소를 장바구니 파일(JSON)에 담고, 목록을 보여주고, 빼는 작업을 한다. 장바구니가 차면 1단계로 Google Maps 링크를 생성하고, 2단계로 Google My Maps용 KML 파일을 만들어 mymaps.google.com에서 직접 임포트하는 방법을 안내한다(My Maps는 자동 생성 API가 없어 마지막 임포트는 사용자가 직접 한다). "이거 담아줘", "장바구니 보여줘", "3번 빼줘", "지도로 보여줘", "My Maps 만들어줘" 같은 요청에 사용한다.
 ---
 
 # 목적
@@ -126,17 +126,19 @@ https://www.google.com/maps/search/?api=1&query=<lat>,<lng>
 ...
 ```
 
-## 2단계 — Google My Maps 커스텀 지도 생성 (Google Drive 연동 필요)
+## 2단계 — Google My Maps용 KML 생성 (수동 임포트, API로 자동 생성 불가)
 
 "My Maps 만들어줘" 또는 "커스텀 지도 만들어줘" 요청이 오면 아래 절차를 실행한다.
 
-### 2-1. Google Drive 커넥터 확인
+**먼저 알아야 할 제약**: Google My Maps는 지도를 프로그래밍적으로 생성하는 공개 API를
+제공하지 않는다. Drive에 KML 파일을 업로드해도 그 자체로 My Maps 지도가 만들어지지 않고,
+`maps.google.com/maps/d/edit?mid=<drive-파일-ID>` 같은 URL도 실제 My Maps 지도를 가리키지
+않아 503/404로 이어진다. 이 스킬이 자동으로 할 수 있는 건 **KML 파일 준비까지**이고,
+지도 생성 자체는 사용자가 mymaps.google.com에서 직접 KML을 드래그&드롭으로 임포트해야 한다
+(`sync-google-calendar`가 .ics를 캘린더 앱에 드래그&드롭으로 넣는 것과 같은 방식).
+이 사실을 사용자에게 미리 안내하고, 존재하지 않는 지도 링크를 만들어 보여주지 않는다.
 
-`sync-google-calendar`와 동일하게, 이 스킬은 OAuth 코드를 직접 다루지 않는다.
-Codex 환경에 연결된 Google Drive 커넥터(MCP)가 있는지 먼저 확인한다.
-없으면 사용자에게 연결을 안내하고 멈춘다.
-
-### 2-2. KML 파일 생성
+### 2-1. KML 파일 생성
 
 장바구니 항목을 KML 포맷으로 변환한다. KML은 Google My Maps가 인식하는 지도 데이터 형식이다.
 
@@ -175,35 +177,37 @@ Codex 환경에 연결된 Google Drive 커넥터(MCP)가 있는지 먼저 확인
 </kml>
 ```
 
-KML 파일은 `./travel-cart/<trip-id>.kml`로 로컬에도 저장한다.
+KML 파일은 `./travel-cart/<trip-id>.kml`로 로컬에 저장한다. 이게 이 스킬이 자동으로 하는 마지막 단계다.
 
-### 2-3. Google Drive에 업로드
+### 2-2. 사용자에게 전달 (수동 임포트 안내)
 
-Google Drive 커넥터로 KML 파일을 업로드한다:
-- 파일명: `<trip-id>-map.kml`
-- mimeType: `application/vnd.google-earth.kml+xml`
-- 공유 설정: 링크 있는 사람 누구나 보기 가능
-
-업로드 후 받은 Drive 파일 ID로 My Maps 임포트 URL을 생성한다:
-```
-https://www.google.com/maps/d/edit?mid=<file-id>
-```
-
-### 2-4. 사용자에게 전달
+Drive 업로드나 `mid=` 지도 링크를 만들어내지 않는다 — 존재하지 않는 링크이므로 클릭하면
+503/404가 난다. 대신 로컬 KML 파일 경로와 함께 mymaps.google.com에서 직접 임포트하는
+방법을 안내한다:
 
 ```
-✅ Google My Maps 지도가 준비됐어요!
+✅ KML 파일이 준비됐어요!
 
-🗺️ 지도 열기: https://www.google.com/maps/d/edit?mid=xxxx
 📎 KML 파일: ./travel-cart/sapporo-2026-09.kml
 
-지도에 총 3개 장소가 핀으로 표시돼 있어요.
-로그인하면 직접 편집하거나 다른 사람과 공유할 수 있어요.
+Google My Maps에 지도로 만들려면:
+1. https://mymaps.google.com/create 접속 (Google 로그인 필요)
+2. "가져오기" 클릭 → 위 KML 파일을 드래그&드롭
+3. 총 3개 장소가 핀으로 표시돼요. 이후 직접 편집하거나 다른 사람과 공유할 수 있어요.
+
+※ Google My Maps는 지도를 자동으로 만들어주는 API가 없어서, 이 마지막 단계는
+   직접 해주셔야 해요.
 ```
 
-### 사용자 확인 원칙
+바로 확인 가능한 자동 옵션이 필요하면 1단계의 Google Maps 링크(로그인 불필요, 즉시 열림)를
+다시 안내한다.
 
-Drive에 파일을 올리기 전에 반드시 "지도를 만들어 Google Drive에 저장할까요?"라고 확인받는다.
+### Google Drive 커넥터를 실제로 쓰는 경우
+
+사용자가 KML을 Google Drive에도 백업해두길 원하면(지도 생성과는 별개로), Drive 커넥터가
+연결돼 있는지 확인한 뒤 파일만 업로드한다. 이때도 업로드된 Drive 파일 ID로 My Maps
+링크를 만들지 않는다 — Drive 파일 ID와 My Maps 지도 ID(`mid`)는 서로 다른 개념이다.
+업로드 전에는 반드시 "KML 파일을 Google Drive에 백업해 둘까요?"라고 확인받는다.
 사용자 동의 없이 Drive에 파일을 생성하지 않는다.
 
 ---
@@ -220,3 +224,5 @@ Drive에 파일을 올리기 전에 반드시 "지도를 만들어 Google Drive�
 - Google OAuth 토큰·API 키를 이 스킬 안에 저장하거나 직접 다루지 않는다
 - 사용자 동의 없이 Drive에 파일을 업로드하지 않는다
 - 좌표를 모를 때 임의로 지어내지 않는다 — 주소 검색으로 대체한다
+- 존재하지 않는 My Maps 지도 링크(`mid=<Drive 파일 ID>` 등)를 만들어 보여주지 않는다 —
+  Drive 파일 ID와 My Maps 지도 ID는 다른 개념이며, 이렇게 만든 링크는 503/404로 이어진다

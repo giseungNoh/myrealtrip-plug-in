@@ -1,0 +1,20 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "local",
+  "owner": {
+    "name": "노기승",
+    "email": "juks8666@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "myrealtrip-curator",
+      "source": "./src",
+      "description": "현지 블로그·커뮤니티에서 검증된 장소를 발굴해 장바구니에 담고, 일정표·캘린더로 만들고, 마이리얼트립 상품을 추천하는 여행 큐레이터",
+      "author": {
+        "name": "노기승",
+        "email": "juks8666@gmail.com"
+      },
+      "category": "travel"
+    }
+  ]
+}
