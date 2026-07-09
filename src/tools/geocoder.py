@@ -36,6 +36,21 @@ try:
 except ImportError:
     from duckduckgo_search import DDGS
 
+# ddgs의 "duckduckgo" 백엔드만 httpx 기반 클라이언트를 쓰는데, 이 클라이언트는
+# 요청마다 TLS 설정을 무작위로 바꾼다(봇 탐지 회피 목적) — 그중 "TLS 1.3 이상 강제"
+# 옵션이 걸리면 이 환경의 구버전 LibreSSL(2.8.3, TLS 1.3 미지원)에서 즉시
+# "Unsupported protocol version 0x304"로 실패한다. 실측 결과 이 문제로 개별
+# 검색 호출의 60~70%가 조용히 빈 결과로 처리되고 있었다. 나머지 백엔드는 전부
+# primp(자체 TLS 스택)를 써서 이 문제가 없으므로 duckduckgo만 제외한다.
+#
+# "mullvad_brave"·"mullvad_google"도 함께 제외한다 — 이 둘이 의존하는 Mullvad의
+# 검색 프록시 서비스 Leta가 2025-11-27부로 영구 종료돼(leta.mullvad.net DNS
+# 조회 자체가 실패) ddgs 9.8.0에도 죽은 백엔드로 남아있다. 즉 ddgs로 구글
+# 결과를 받는 유일한 경로였던 mullvad_google도 이미 죽어있었다 — 구글 결과가
+# 필요하면 공식 Google Custom Search JSON API(무료 키 발급 필요)를 별도로
+# 붙여야 한다.
+_DDGS_BACKENDS = "bing,brave,mojeek,wikipedia,yahoo,yandex"
+
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 USER_AGENT = "myrealtrip-curator/1.0 (geocoder; contact=juks8666@gmail.com)"
 RATE_LIMIT_SEC = 1.1  # Nominatim 정책: max 1 req/sec
@@ -85,10 +100,17 @@ def nominatim(query: str) -> Optional[tuple[float, float, str]]:
 # 채우기가 항목 하나의 크래시 때문에 통째로 중단되는 것을 막는다.
 
 def _ddgs_search_subprocess(query: str, max_results: int) -> list[dict]:
+    # ddgs가 콤마로 묶인 여러 백엔드를 조회할 때 동시 조회 엔진 수를
+    # min(엔진수, ceil(max_results/10)+1)로 제한한다. 우리가 쓰는 6개 백엔드를
+    # 전부 실제로 조회시키려면 최소 max_results=60 이상을 요청해야 한다
+    # (그렇지 않으면 뒤쪽 엔진 — 특히 결과가 좋은 yahoo — 이 아예 호출조차
+    # 안 되는 채로 조용히 빠진다). 실제로 쓸 결과 개수(max_results)는 그 다음에
+    # 잘라낸다.
+    fetch_count = max(max_results, 60)
     try:
         proc = subprocess.run(
-            [sys.executable, __file__, "--_ddg-worker", query, str(max_results)],
-            capture_output=True, text=True, timeout=20,
+            [sys.executable, __file__, "--_ddg-worker", query, str(fetch_count)],
+            capture_output=True, text=True, timeout=25,
         )
     except subprocess.TimeoutExpired:
         print(f"    [DDG 타임아웃] {query[:50]}", file=sys.stderr)
@@ -97,9 +119,10 @@ def _ddgs_search_subprocess(query: str, max_results: int) -> list[dict]:
         print(f"    [DDG 워커 비정상 종료 exit={proc.returncode}] {query[:50]}", file=sys.stderr)
         return []
     try:
-        return json.loads(proc.stdout)
+        results = json.loads(proc.stdout)
     except json.JSONDecodeError:
         return []
+    return results[:max_results]
 
 
 # 주소처럼 보이는 패턴 (이탈리아어/영어 기준)
@@ -110,12 +133,30 @@ _ADDRESS_RE = re.compile(
 )
 
 
+def _filter_relevant(results: list[dict], name: str) -> list[dict]:
+    """
+    검색 결과 중 실제로 장소 이름이 언급된 것만 남긴다.
+
+    검색 백엔드가 진짜 매칭을 못 찾으면 완전 무관한 필러 콘텐츠를 대신
+    반환하는 경우가 있다 — 그런 결과에서 우연히 주소처럼 보이는 패턴을
+    추출해 엉뚱한 좌표로 확정하는 것을 막는다.
+    """
+    name_lower = (name or "").strip().lower()
+    if not name_lower:
+        return results
+    return [
+        r for r in results
+        if name_lower in (r.get("title", "") + " " + r.get("body", "")).lower()
+    ]
+
+
 def _web_search_address(name: str, city: str) -> Optional[tuple[float, float, str]]:
     """
     DDGS로 장소 검색 → 스니펫에서 주소 패턴 추출 → Nominatim.
     """
     query = f'"{name}" {city} address indirizzo'
     results = _ddgs_search_subprocess(query, max_results=5)
+    results = _filter_relevant(results, name)
     time.sleep(1.0)
 
     for r in results:
@@ -282,7 +323,9 @@ if __name__ == "__main__":
         _worker_query, _worker_max = sys.argv[2], int(sys.argv[3])
         try:
             _worker_ddgs = DDGS()
-            _worker_results = list(_worker_ddgs.text(_worker_query, max_results=_worker_max))
+            _worker_results = list(
+                _worker_ddgs.text(_worker_query, max_results=_worker_max, backend=_DDGS_BACKENDS)
+            )
         except Exception:
             _worker_results = []
         print(json.dumps(_worker_results, ensure_ascii=False))

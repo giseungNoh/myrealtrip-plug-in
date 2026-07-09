@@ -18,11 +18,34 @@ from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass, asdict
 from typing import Optional
 
+import os
+
+# DDG 검색 백엔드(primp/reqwest)가 시스템 프록시 설정을 조회하다 SIGABRT로 죽는
+# 경우가 있다 (macOS, 메인 스레드에서도 발생해 프로세스 격리만으로는 완전히
+# 막지 못한다). env 프록시를 명시해 시스템 조회 자체를 최대한 우회한다.
+os.environ.setdefault("NO_PROXY", "*")
+os.environ.setdefault("no_proxy", "*")
+
 import aiohttp
 try:
     from ddgs import DDGS
 except ImportError:
     from duckduckgo_search import DDGS
+
+# ddgs의 "duckduckgo" 백엔드만 httpx 기반 클라이언트를 쓰는데, 이 클라이언트는
+# 요청마다 TLS 설정을 무작위로 바꾼다(봇 탐지 회피 목적) — 그중 "TLS 1.3 이상 강제"
+# 옵션이 걸리면 이 환경의 구버전 LibreSSL(2.8.3, TLS 1.3 미지원)에서 즉시
+# "Unsupported protocol version 0x304"로 실패한다. 실측 결과 이 문제로 개별
+# 검색 호출의 60~70%가 조용히 빈 결과로 처리되고 있었다. 나머지 백엔드는 전부
+# primp(자체 TLS 스택)를 써서 이 문제가 없으므로 duckduckgo만 제외한다.
+#
+# "mullvad_brave"·"mullvad_google"도 함께 제외한다 — 이 둘이 의존하는 Mullvad의
+# 검색 프록시 서비스 Leta가 2025-11-27부로 영구 종료돼(leta.mullvad.net DNS
+# 조회 자체가 실패) ddgs 9.8.0에도 죽은 백엔드로 남아있다. 즉 ddgs로 구글
+# 결과를 받는 유일한 경로였던 mullvad_google도 이미 죽어있었다 — 구글 결과가
+# 필요하면 공식 Google Custom Search JSON API(무료 키 발급 필요)를 별도로
+# 붙여야 한다.
+_DDGS_BACKENDS = "bing,brave,mojeek,wikipedia,yahoo,yandex"
 
 # ---------------------------------------------------------------------------
 # 협찬 표기 감지 패턴 (언어별)
@@ -355,14 +378,22 @@ def _ddgs_search_sync(query: str, max_results: int) -> list[dict]:
     프로세스 단위로 격리해서 실행한다.
 
     macOS 첫 실행 시 네트워크 권한 다이얼로그로 TLS 오류가 날 수 있어
-    최대 2회 재시도한다.
+    최대 2회 재시도한다 (duckduckgo 백엔드를 제외해도 남는 일반적인 네트워크
+    오류에 대한 방어 — 자세한 원인은 위 `_DDGS_BACKENDS` 주석 참고).
+
+    ddgs가 콤마로 묶인 여러 백엔드를 조회할 때 동시 조회 엔진 수를
+    min(엔진수, ceil(max_results/10)+1)로 제한하는 문제가 있어, 우리가 쓰는
+    6개 백엔드를 전부 실제로 조회시키려면 max_results=60 이상을 요청해야
+    한다. 실제로 쓸 결과 개수(max_results)는 그 다음에 잘라낸다.
     """
     import time
+    fetch_count = max(max_results, 60)
     last_exc: Exception = RuntimeError("DDG search not attempted")
     for attempt in range(3):
         try:
             ddgs = DDGS()
-            return list(ddgs.text(query, max_results=max_results))
+            results = list(ddgs.text(query, max_results=fetch_count, backend=_DDGS_BACKENDS))
+            return results[:max_results]
         except Exception as e:
             last_exc = e
             if attempt < 2:
