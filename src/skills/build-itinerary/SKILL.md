@@ -1,6 +1,6 @@
 ---
 name: build-itinerary
-description: 장바구니(travel-cart)에 담긴 장소들을 여행 일수에 맞춰 Day별로 배치하고, 숙소·액티비티 추천을 포함한 일정표를 Google Sheets로 만들어 공유 링크를 제공한다. PDF·Excel은 Sheets에서 직접 내보낼 수 있다. "일정 짜줘", "며칠짜리 코스로 만들어줘" 같은 요청에 사용한다.
+description: 장바구니(travel-cart)에 담긴 장소들을 여행 일수에 맞춰 Day별로 배치하고, 숙소·액티비티 추천을 포함한 일정표를 spreadsheets 플러그인으로 서식 있는 Excel(.xlsx)로 만든 뒤 google-drive 플러그인으로 Google Sheets 공유 링크까지 제공한다. "일정 짜줘", "며칠짜리 코스로 만들어줘" 같은 요청에 사용한다.
 ---
 
 # 목적
@@ -68,22 +68,52 @@ description: 장바구니(travel-cart)에 담긴 장소들을 여행 일수에 �
   (예: 장바구니에 銭湯가 많으면 → "사우나 이용법·마나 체험" 액티비티 제안)
 - `recommend-mrt-products`로 마이리얼트립 상품을 검색해 연결한다
 
-## 5. 일정표 출력 — Google Sheets 생성
+## 5. 일정표 출력 — 스프레드시트 생성 및 공유
 
-### 왜 Google Sheets인가
+### 왜 이 방식인가
 
-마크다운은 개발자 외엔 보기 불편하고 수정이 어렵다.
-Google Sheets는 브라우저에서 바로 편집 가능하고, 거기서 **PDF·Excel(.xlsx) 내보내기**도
-한 번에 된다. 이미 Google Drive MCP가 연결돼 있으므로 추가 인증 없이 바로 생성할 수 있다.
+마크다운은 개발자 외엔 보기 불편하고 수정이 어렵다. 그래서 두 플러그인을 순서대로 쓴다:
+1. **spreadsheets 플러그인**으로 서식·셀 포맷이 제대로 된 `.xlsx`를 로컬에 먼저 만든다
+   (수식이 필요한 표는 아니지만, 퍼센트·날짜·하이퍼링크 같은 셀 서식을 제대로 입히는 데 쓴다).
+2. **google-drive 플러그인**으로 그 파일을 Drive에 올려 브라우저에서 바로 편집 가능한
+   공유 링크를 받는다 (Sheets 포맷으로 변환 업로드).
+
+### 0. 연결 확인 및 설치 유도 (가장 먼저)
+
+두 플러그인 다 확인한다 (`codex plugin list`).
+
+- **spreadsheets** — `.xlsx` 실제 생성/서식을 담당. 없으면 설치 안내:
+  ```
+  codex plugin add spreadsheets@openai-primary-runtime
+  ```
+- **google-drive** — Drive 업로드·공유 링크 생성을 담당 (Drive·Docs·Sheets·Slides 커버). 없으면:
+  ```
+  codex plugin add google-drive@openai-curated
+  ```
+  설치 후 최초 사용 시 Google 계정 인증(OAuth) 창이 뜬다 — 사용자가 직접 로그인해야 한다.
+- **Claude Code**: 연결된 스프레드시트 도구·Google Drive MCP 커넥터가 있는지 확인한다.
+  없으면 사용자에게 연결을 안내하고 멈춘다.
+
+플러그인/커넥터가 연결되면 실제로 어떤 도구를 제공하는지 먼저 확인한다 (버전마다 도구
+이름·파라미터가 달라질 수 있으므로 하드코딩하지 않는다). google-drive만 없고
+spreadsheets는 있으면, 일단 로컬 `.xlsx`까지만 만들고 업로드는 보류한 채 사용자에게
+알린다 — 반대로 spreadsheets가 없으면 서식 있는 파일 자체를 만들 수 없으므로 먼저
+설치를 유도한다.
 
 ### 생성 절차
 
-1. Google Drive 커넥터가 연결돼 있는지 확인한다. 없으면 사용자에게 연결을 안내하고 멈춘다.
-2. Drive API로 Google Sheets 파일을 생성한다 (`mimeType: application/vnd.google-apps.spreadsheet`).
-3. 파일명: `<trip-id> 여행일정` (예: `삿포로 2026-09 여행일정`)
-4. 아래 시트 구성으로 데이터를 채운다.
+1. (위 0단계에서 두 플러그인 연결 확인 완료)
+2. spreadsheets 플러그인(`@oai/artifact-tool`)으로 아래 "Sheets 구성"대로 시트 2개짜리
+   `.xlsx`를 만든다. `./travel-cart/<trip-id>-itinerary.xlsx`에 저장한다.
+   - 현지어 리뷰 비율: 퍼센트 셀 서식(`0%`)
+   - 날짜: 날짜 셀 서식
+   - Google Maps·마이리얼트립 링크: 하이퍼링크로 삽입
+   - 여백 슬롯 행: 🚶 이모지로 표기해 한눈에 구분
+3. google-drive 도구로 이 `.xlsx`를 업로드하되 `mimeType: application/vnd.google-apps.spreadsheet`로
+   지정해 Google Sheets 포맷으로 변환 업로드한다 (그래야 브라우저에서 바로 편집 가능해진다).
+4. 파일명: `<trip-id> 여행일정` (예: `삿포로 2026-09 여행일정`)
 5. 공유 설정: 링크 있는 사람 누구나 편집 가능으로 설정한다.
-6. 사용자에게 Sheets 링크를 전달한다.
+6. 사용자에게 로컬 `.xlsx` 경로와 Sheets 공유 링크를 함께 전달한다.
 
 ### Sheets 구성 (시트 2개)
 
@@ -116,8 +146,10 @@ Google Sheets는 브라우저에서 바로 편집 가능하고, 거기서 **PDF�
 📊 Google Sheets로 열기 (편집 가능):
    https://docs.google.com/spreadsheets/d/xxxx
 
+📎 로컬 Excel 파일: ./travel-cart/sapporo-2026-09-itinerary.xlsx
+   (Drive 업로드 없이 바로 Excel로 열어도 됨)
+
 PDF로 저장하려면: Sheets 상단 메뉴 → 파일 → 다운로드 → PDF
-Excel로 저장하려면: 파일 → 다운로드 → Microsoft Excel(.xlsx)
 
 총 4일 일정, 장소 11개, 여백 슬롯 4개 포함됐어요.
 숙소·액티비티 추천은 시트2에 있어요.

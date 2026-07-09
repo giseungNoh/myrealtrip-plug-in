@@ -204,8 +204,15 @@ Google My Maps에 지도로 만들려면:
 
 ### Google Drive 커넥터를 실제로 쓰는 경우
 
-사용자가 KML을 Google Drive에도 백업해두길 원하면(지도 생성과는 별개로), Drive 커넥터가
-연결돼 있는지 확인한 뒤 파일만 업로드한다. 이때도 업로드된 Drive 파일 ID로 My Maps
+사용자가 KML을 Google Drive에도 백업해두길 원하면(지도 생성과는 별개로):
+
+- **Codex**: `google-drive` 플러그인이 설치돼 있는지 확인한다. 없으면 설치를 안내한다:
+  ```
+  codex plugin add google-drive@openai-curated
+  ```
+- **Claude Code**: 연결된 Google Drive MCP 커넥터가 있는지 확인한다.
+
+연결돼 있으면 파일만 업로드한다. 이때도 업로드된 Drive 파일 ID로 My Maps
 링크를 만들지 않는다 — Drive 파일 ID와 My Maps 지도 ID(`mid`)는 서로 다른 개념이다.
 업로드 전에는 반드시 "KML 파일을 Google Drive에 백업해 둘까요?"라고 확인받는다.
 사용자 동의 없이 Drive에 파일을 생성하지 않는다.
