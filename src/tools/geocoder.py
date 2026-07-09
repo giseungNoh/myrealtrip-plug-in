@@ -7,8 +7,7 @@ geocoder.py — 장바구니 JSON의 lat/lng 자동 채우기
 
 전략 순서:
   1~5. Nominatim(OpenStreetMap) — 이름+주소 조합
-  6.   구글맵 검색 결과에서 @lat,lng 추출 (주소 없는 곳 전용)
-  7.   DDGS 웹 검색 → 주소 추출 → Nominatim 재시도
+  6.   DDGS 웹 검색 → 주소 추출 → Nominatim 재시도
 
 API: Nominatim — 무료, API 키 불필요, 초당 1건 제한 자동 준수
 """
@@ -64,55 +63,6 @@ def nominatim(query: str) -> Optional[tuple[float, float, str]]:
             return float(r["lat"]), float(r["lon"]), r.get("display_name", "")
     except Exception as e:
         print(f"    [Nominatim 오류] {e}", file=sys.stderr)
-    return None
-
-
-# ---------------------------------------------------------------------------
-# 구글맵 URL에서 좌표 추출
-# ---------------------------------------------------------------------------
-
-def _extract_coords_from_url(url: str) -> Optional[tuple[float, float]]:
-    """
-    Google Maps URL 패턴에서 좌표 추출.
-    예: https://www.google.com/maps/place/.../@41.8912,12.4688,17z/
-        https://maps.google.com/?q=41.8912,12.4688
-    """
-    patterns = [
-        r'/@(-?\d+\.\d+),(-?\d+\.\d+)',      # /place/.../@lat,lng,zoom
-        r'[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)',  # ?q=lat,lng
-        r'll=(-?\d+\.\d+),(-?\d+\.\d+)',      # ll=lat,lng
-    ]
-    for pat in patterns:
-        m = re.search(pat, url)
-        if m:
-            return float(m.group(1)), float(m.group(2))
-    return None
-
-
-def _google_maps_search(name: str, city: str) -> Optional[tuple[float, float, str]]:
-    """
-    DDGS로 '{name} {city} site:google.com/maps' 검색 →
-    결과 URL의 @lat,lng 추출.
-    주소가 없는 장소에 사용하는 폴백 전략.
-    """
-    query = f"{name} {city} site:maps.google.com OR site:google.com/maps"
-    try:
-        ddgs = DDGS()
-        results = list(ddgs.text(query, max_results=5))
-        time.sleep(1.0)  # DDG 요청 간격
-    except Exception as e:
-        print(f"    [DDGS 오류] {e}", file=sys.stderr)
-        return None
-
-    for r in results:
-        url = r.get("href", "")
-        coords = _extract_coords_from_url(url)
-        if coords:
-            lat, lng = coords
-            label = f"구글맵 URL ({url[:60]}...)"
-            print(f"    → 좌표 추출: {url[:80]}", file=sys.stderr)
-            return lat, lng, r.get("title", "")
-
     return None
 
 
@@ -211,16 +161,8 @@ def geocode_item(item: dict, destination: str) -> Optional[tuple[float, float, s
             lat, lng, confirmed = result
             return lat, lng, confirmed, label
 
-    # 전략 6: 구글맵 URL → @lat,lng 추출
+    # 전략 6: 웹 검색 → 주소 추출 → Nominatim 재시도
     search_name = name_local or name
-    if search_name:
-        print(f"    [구글맵 검색] {search_name} {city}", file=sys.stderr)
-        result = _google_maps_search(search_name, city)
-        if result:
-            lat, lng, confirmed = result
-            return lat, lng, confirmed, "구글맵URL추출"
-
-    # 전략 7: 웹 검색 → 주소 추출 → Nominatim 재시도
     if search_name:
         print(f"    [웹검색→주소] {search_name} {city}", file=sys.stderr)
         result = _web_search_address(search_name, city)

@@ -55,7 +55,7 @@ Codex의 google-calendar 플러그인은 아래 도구를 제공한다. 이 스�
 | 필드 | 필요성 | 채우는 스크립트 |
 |------|--------|----------------|
 | `day` | 필수 (없으면 경고 후 마지막 날 뒤에 배치) | `route_optimizer.py` |
-| `lat`, `lng` | 권장 (있으면 GEO 필드 + Maps URL 자동 생성) | `geocoder.py` |
+| `lat`, `lng` | 권장 (있으면 GEO 필드 + Google Maps URL 자동 생성) | `geocoder.py` |
 | `address` | 권장 (없으면 이름으로 Maps URL 구성) | `geocoder.py` |
 | `local_review_ratio` | 선택 (있으면 DESCRIPTION에 포함) | `review_ratio.py` |
 
@@ -81,6 +81,9 @@ Codex의 google-calendar 플러그인은 아래 도구를 제공한다. 이 스�
 - **LOCATION**: 현지어 주소
 - **GEO**: 위도;경도 (좌표 있을 때)
 - **DESCRIPTION**: 현지어 리뷰 비율 / Google Maps URL / 발굴 출처 / 메모
+  - Google Maps URL: 항목의 `name_local`(또는 `name`) + `address`로 직접 구성한다
+    (`https://www.google.com/maps/search/?api=1&query=<name_local>+<address>`).
+    좌표가 있으면 `query=<lat>,<lng>`로 대체한다.
 
 ## 여백 슬롯
 
