@@ -55,7 +55,8 @@
       "Bash(git -C /Users/juks86/Downloads/myrealtrip-curator log --oneline origin/main..HEAD)",
       "Bash(/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/bin/python3 --version)",
       "Bash(/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/bin/python3 -m pip show ddgs primp duckduckgo_search)",
-      "Bash(echo \"exit=$?\")"
+      "Bash(echo \"exit=$?\")",
+      "Bash(git rev-list *)"
     ]
   }
 }
