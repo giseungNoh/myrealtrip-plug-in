@@ -13,7 +13,9 @@ API: Nominatim — 무료, API 키 불필요, 초당 1건 제한 자동 준수
 """
 
 import json
+import os
 import re
+import subprocess
 import time
 import argparse
 import sys
@@ -21,6 +23,13 @@ from pathlib import Path
 from typing import Optional
 
 import requests
+
+# DDG 검색 백엔드(primp/reqwest)가 시스템 프록시 설정을 조회하다 SIGABRT로
+# 죽는 경우가 있다 (macOS, 특히 샌드박스된 상위 프로세스 하에서 재현됨 —
+# 메인 스레드에서도 발생해 스레드 격리만으로는 완전히 막지 못한다).
+# env 프록시를 명시해 시스템 조회 자체를 최대한 우회한다.
+os.environ.setdefault("NO_PROXY", "*")
+os.environ.setdefault("no_proxy", "*")
 
 try:
     from ddgs import DDGS
@@ -67,8 +76,31 @@ def nominatim(query: str) -> Optional[tuple[float, float, str]]:
 
 
 # ---------------------------------------------------------------------------
-# DDGS 웹 검색 → 주소 추출 → Nominatim 재시도
+# DDGS 웹 검색 (서브프로세스 격리) → 주소 추출 → Nominatim 재시도
 # ---------------------------------------------------------------------------
+#
+# DDGS().text()는 이 스크립트 자신을 `--_ddg-worker`로 재실행해 별도 프로세스에서
+# 돌린다. primp가 SIGABRT로 죽어도 워커 프로세스만 죽고, 이 스크립트는 non-zero
+# exit code를 받아 "검색 결과 없음"으로 처리하고 계속 진행한다 — 카트 전체 좌표
+# 채우기가 항목 하나의 크래시 때문에 통째로 중단되는 것을 막는다.
+
+def _ddgs_search_subprocess(query: str, max_results: int) -> list[dict]:
+    try:
+        proc = subprocess.run(
+            [sys.executable, __file__, "--_ddg-worker", query, str(max_results)],
+            capture_output=True, text=True, timeout=20,
+        )
+    except subprocess.TimeoutExpired:
+        print(f"    [DDG 타임아웃] {query[:50]}", file=sys.stderr)
+        return []
+    if proc.returncode != 0:
+        print(f"    [DDG 워커 비정상 종료 exit={proc.returncode}] {query[:50]}", file=sys.stderr)
+        return []
+    try:
+        return json.loads(proc.stdout)
+    except json.JSONDecodeError:
+        return []
+
 
 # 주소처럼 보이는 패턴 (이탈리아어/영어 기준)
 _ADDRESS_RE = re.compile(
@@ -83,13 +115,8 @@ def _web_search_address(name: str, city: str) -> Optional[tuple[float, float, st
     DDGS로 장소 검색 → 스니펫에서 주소 패턴 추출 → Nominatim.
     """
     query = f'"{name}" {city} address indirizzo'
-    try:
-        ddgs = DDGS()
-        results = list(ddgs.text(query, max_results=5))
-        time.sleep(1.0)
-    except Exception as e:
-        print(f"    [DDGS 오류] {e}", file=sys.stderr)
-        return None
+    results = _ddgs_search_subprocess(query, max_results=5)
+    time.sleep(1.0)
 
     for r in results:
         text = r.get("body", "") + " " + r.get("title", "")
@@ -249,6 +276,18 @@ def print_summary(results: dict) -> None:
 
 
 if __name__ == "__main__":
+    # 서브프로세스 워커 모드 — _ddgs_search_subprocess()가 이 스크립트 자신을
+    # 재실행할 때 쓴다. argparse를 거치지 않고 바로 처리하고 종료한다.
+    if len(sys.argv) >= 4 and sys.argv[1] == "--_ddg-worker":
+        _worker_query, _worker_max = sys.argv[2], int(sys.argv[3])
+        try:
+            _worker_ddgs = DDGS()
+            _worker_results = list(_worker_ddgs.text(_worker_query, max_results=_worker_max))
+        except Exception:
+            _worker_results = []
+        print(json.dumps(_worker_results, ensure_ascii=False))
+        sys.exit(0)
+
     parser = argparse.ArgumentParser(description="장바구니 JSON 좌표 자동 채우기")
     parser.add_argument("--cart", "-c", required=True)
     parser.add_argument("--dry-run", action="store_true", help="파일 수정 없이 결과만 출력")
