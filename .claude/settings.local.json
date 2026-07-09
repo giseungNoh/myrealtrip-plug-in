@@ -56,7 +56,12 @@
       "Bash(/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/bin/python3 --version)",
       "Bash(/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/bin/python3 -m pip show ddgs primp duckduckgo_search)",
       "Bash(echo \"exit=$?\")",
-      "Bash(git rev-list *)"
+      "Bash(git rev-list *)",
+      "Bash(curl -sS -o /dev/null -w \"http_code=%{http_code} time=%{time_total}s\\\\n\" --max-time 8 \"https://leta.mullvad.net/\")",
+      "Bash(nslookup leta.mullvad.net)",
+      "Bash(nslookup www.google.com)",
+      "Bash(nslookup www.bing.com)",
+      "Bash(git fetch *)"
     ]
   }
 }
