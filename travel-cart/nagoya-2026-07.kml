@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>nagoya-2026-07 여행 장바구니</name>
+    <description>myrealtrip-curator로 발굴한 로컬 스팟 목록 (1박 2일, 2026-07-18~19)</description>
+
+    <Placemark>
+      <name>호텔 잘 시티 나고야 니시키</name>
+      <description>숙소 / 3.5성급 4.6★ / 238,123원/박 / 장바구니 장소들의 중간 지점</description>
+      <address>名古屋市中区錦, 名古屋市, 日本</address>
+    </Placemark>
+
+    <Placemark>
+      <name>うなぎのうな泰 錦店</name>
+      <description>종류: 히츠마부시 전문점 / 히츠마부시 특(1,300엔) / 출처: https://note.com/ready_pika6948/n/n891a9f62f9b0</description>
+      <address>名古屋市中区錦(伏見駅 인근), 名古屋市, 日本</address>
+    </Placemark>
+
+    <Placemark>
+      <name>伏見地下街 - 鶏白湯おでん 月らん</name>
+      <description>종류: 이자카야/혼술 / 초심자용 솔로 음주 하시고(はしご酒) / 출처: https://note.com/momm_0202/n/n98bf287886ec</description>
+      <address>名古屋市中区 伏見地下街, 名古屋市, 日本</address>
+    </Placemark>
+
+    <Placemark>
+      <name>鳥開総本家 名古屋コーチン料理 名駅エスカ店</name>
+      <description>종류: 나고야코친 닭요리 전문점 / 출처: https://ponderosa0619.hatenablog.com/entry/2026/04/01/090000</description>
+      <address>名古屋市中村区 名駅 地下街エスカ内, 名古屋市, 日本</address>
+    </Placemark>
+
+  </Document>
+</kml>

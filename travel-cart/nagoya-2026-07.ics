@@ -1,0 +1,70 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//myrealtrip-curator//KO
+X-WR-CALNAME:Nagoya\, Japan 여행일정
+X-WR-TIMEZONE:Asia/Seoul
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:nagoya-2026-07-1@myrealtrip-curator
+DTSTART:20260718T180000
+DTEND:20260718T193000
+SUMMARY:うなぎのうな泰 錦店 (히츠마부시 전문점)
+LOCATION:名古屋市中区錦(伏見駅 인근)
+DESCRIPTION:Google Maps: https://www.google.com/maps/search/?api=1&query=名古屋市中区錦(伏見駅+인근)\n발굴 출처: https://note.com/ready_pika6948/n/n891a9f62f9b0\n메모: 처음 혼자 나고야 1박2일 여행을 떠난 저자가 꼽은 히츠마부시 특(1\,300엔)\, 협찬 없음
+END:VEVENT
+BEGIN:VEVENT
+UID:nagoya-2026-07-4@myrealtrip-curator
+DTSTART:20260718T200000
+DTEND:20260718T220000
+SUMMARY:伏見地下街 - 鶏白湯おでん 月らん (이자카야/혼술)
+LOCATION:名古屋市中区 伏見地下街
+DESCRIPTION:Google Maps: https://www.google.com/maps/search/?api=1&query=名古屋市中区+伏見地下街\n발굴 출처: https://note.com/momm_0202/n/n98bf287886ec\n메모: 혼자 가면 붕 뜨지 않을까 불안했던 저자의 초심자용 솔로 음주 하시고(はしご酒) 기록\, 협찬 없음
+END:VEVENT
+BEGIN:VEVENT
+UID:nagoya-2026-07-6@myrealtrip-curator
+DTSTART:20260718T150000
+DTEND:20260718T160000
+SUMMARY:鳥開総本家 名古屋コーチン料理 名駅エスカ店 (나고야코친 닭요리 전문점)
+LOCATION:名古屋市中村区 名駅 地下街エスカ内
+DESCRIPTION:Google Maps: https://www.google.com/maps/search/?api=1&query=名古屋市中村区+名駅+地下街エスカ内\n발굴 출처: https://ponderosa0619.hatenablog.com/entry/2026/04/01/090000\n메모: 나고야 원정 중 가장 마음에 들었던 가게로 직접 지목\, 협찬 없음
+END:VEVENT
+BEGIN:VEVENT
+UID:nagoya-2026-07-hotel-checkin@myrealtrip-curator
+DTSTART:20260718T160000
+DTEND:20260718T163000
+SUMMARY:호텔 체크인 - 호텔 잘 시티 나고야 니시키
+LOCATION:名古屋市中区錦
+DESCRIPTION:3.5성급 4.6★ 238\,123원/박 (세금포함 287\,632원)\n장바구니 장소들(니시키·후시미·나고야역)의 중간 지점
+END:VEVENT
+BEGIN:VEVENT
+UID:nagoya-2026-07-hotel-checkout@myrealtrip-curator
+DTSTART:20260719T093000
+DTEND:20260719T100000
+SUMMARY:호텔 체크아웃 - 호텔 잘 시티 나고야 니시키
+LOCATION:名古屋市中区錦
+DESCRIPTION:조식 후 체크아웃
+END:VEVENT
+BEGIN:VEVENT
+UID:nagoya-2026-07-free-day2@myrealtrip-curator
+DTSTART:20260719T100000
+DTEND:20260719T110000
+SUMMARY:🚶 자유 탐방 (여백)
+DESCRIPTION:니시키/후시미 동네 산책 — 이 시간은 비워두세요, 근처를 걷다 우연히 발견한 곳에 들러보세요.
+END:VEVENT
+BEGIN:VEVENT
+UID:nagoya-2026-07-viewpoint@myrealtrip-curator
+DTSTART:20260719T110000
+DTEND:20260719T120000
+SUMMARY:나고야 스카이 프롬나드 전망대 (선택)
+LOCATION:나고야 사카에
+DESCRIPTION:2\,867원~ / 마이리얼트립 검색 결과 / 필수 아님\nhttps://experiences.myrealtrip.com/products/5542665
+END:VEVENT
+BEGIN:VEVENT
+UID:nagoya-2026-07-free-day1@myrealtrip-curator
+DTSTART:20260718T163000
+DTEND:20260718T170000
+SUMMARY:🚶 자유 탐방 (여백)
+DESCRIPTION:이 시간은 비워두세요 — 근처를 걷다 우연히 발견한 곳에 들러보세요.
+END:VEVENT
+END:VCALENDAR

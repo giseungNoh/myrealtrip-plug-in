@@ -1,0 +1,62 @@
+{
+  "trip_id": "nagoya-2026-07",
+  "destination": "Nagoya, Japan",
+  "dates": {
+    "checkIn": "2026-07-18",
+    "checkOut": "2026-07-19"
+  },
+  "accommodation": {
+    "name": "호텔 잘 시티 나고야 니시키",
+    "name_local": "ホテル ザ シティ 名古屋錦",
+    "area": "名古屋市中区錦(니시키)",
+    "gid": 1390297,
+    "price": "238,123원/박",
+    "rating": 4.6,
+    "note": "장바구니 장소들(니시키·후시미·나고야역)의 중간 지점, 마이리얼트립 검색 결과 중 추천"
+  },
+  "items": [
+    {
+      "id": "1",
+      "name": "Unagi no Unatai Nishiki",
+      "name_local": "うなぎのうな泰 錦店",
+      "type": "히츠마부시 전문점",
+      "address": "名古屋市中区錦(伏見駅 인근)",
+      "lat": null,
+      "lng": null,
+      "local_review_ratio": null,
+      "source_url": "https://note.com/ready_pika6948/n/n891a9f62f9b0",
+      "note": "처음 혼자 나고야 1박2일 여행을 떠난 저자가 꼽은 히츠마부시 특(1,300엔), 협찬 없음",
+      "day": 1,
+      "time_slot": "저녁"
+    },
+    {
+      "id": "4",
+      "name": "Fushimi Underground Street bar-hopping (Toripaitan Oden Tsukiran)",
+      "name_local": "伏見地下街 - 鶏白湯おでん 月らん",
+      "type": "이자카야/혼술",
+      "address": "名古屋市中区 伏見地下街",
+      "lat": null,
+      "lng": null,
+      "local_review_ratio": null,
+      "source_url": "https://note.com/momm_0202/n/n98bf287886ec",
+      "note": "혼자 가면 붕 뜨지 않을까 불안했던 저자의 초심자용 솔로 음주 하시고(はしご酒) 기록, 협찬 없음",
+      "day": 1,
+      "time_slot": "밤"
+    },
+    {
+      "id": "6",
+      "name": "Toriyoshi Sohonke Nagoya Cochin Meieki Esca",
+      "name_local": "鳥開総本家 名古屋コーチン料理 名駅エスカ店",
+      "type": "나고야코친 닭요리 전문점",
+      "address": "名古屋市中村区 名駅 地下街エスカ内",
+      "lat": null,
+      "lng": null,
+      "local_review_ratio": null,
+      "source_url": "https://ponderosa0619.hatenablog.com/entry/2026/04/01/090000",
+      "note": "나고야 원정 중 가장 마음에 들었던 가게로 직접 지목, 협찬 없음",
+      "day": 1,
+      "time_slot": "오후(도착)"
+    }
+  ],
+  "activity_note": "요리 클래스/사케 시음/이자카야 투어 등 로컬 체험 테마로 마이리얼트립 검색했으나 적합한 상품 없음. 저가 전망대(나고야 스카이 프롬나드, 2,867원~)만 참고용으로 확인됨, 필수 아님."
+}
