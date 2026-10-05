@@ -1,0 +1,17 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "myrealtrip-curator",
+  "version": "0.1.0",
+  "description": "현지 블로그와 커뮤니티에서 검증된 장소를 발굴하고 여행 장바구니, 일정표, 캘린더, 마이리얼트립 상품 연결까지 지원하는 여행 큐레이션 플러그인",
+  "author": {
+    "name": "MyRealTrip Curator"
+  },
+  "repository": "https://github.com/giseungNoh/myrealtrip-plug-in",
+  "keywords": [
+    "travel",
+    "local-discovery",
+    "itinerary",
+    "myrealtrip",
+    "calendar"
+  ]
+}
